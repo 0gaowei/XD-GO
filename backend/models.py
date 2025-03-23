@@ -35,7 +35,6 @@ class Product(db.Model):
     createtime = db.Column(db.DateTime, default=datetime.utcnow)
     updatetime = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-
 class Cart(db.Model):
     __tablename__ = 'cart'
     carid = db.Column(db.String(64), primary_key=True)
