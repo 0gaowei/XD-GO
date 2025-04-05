@@ -32,14 +32,25 @@ const form = ref({
     detail: ''
 })
 
-// 提交处理
+// 表单组件（如 AddressForm.vue）
 const submit = async () => {
-    if (isEdit.value) {
-        await updateAddress(route.params.id, form.value)
-    } else {
-        await addAddress(form.value)
+    try {
+        // 合并字段为后端需要的格式
+        const shipping_address = {
+            name: form.value.name,
+            phone: form.value.phone,
+            detail: form.value.detail
+        };
+
+        if (isEdit.value) {
+            await updateAddress({ shipping_address }) // 传递合并后的数据
+        } else {
+            await addAddress({ shipping_address })    // 添加地址也需同步修改
+        }
+        router.push('/address')
+    } catch (error) {
+        console.error('提交失败:', error)
     }
-    router.push('/address')
 }
 
 // 初始化数据

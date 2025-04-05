@@ -44,13 +44,15 @@ export function addAddress(data) {
   })
 }
 
-// 更新地址
-export function updateAddress(id, data) {
-  return request({
-    url: `/user/address/${id}`,
-    method: 'put',
-    data,
-  })
+// 更新地址（修改后）
+export function updateAddress(data) { // 移除 id 参数，因为后端不需要地址ID
+    return request({
+        url: '/address_edit', // 与后端路由完全一致
+        method: 'put',
+        data: {
+            shipping_address: data // 确保字段名与后端匹配
+        }
+    })
 }
 
 // 删除地址
