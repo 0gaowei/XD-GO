@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify
 from backend.models import db, Product, Cart, CartItem, Order, OrderItem
 from backend.views.auth import token_required
 import uuid
+from flask import request
 
 main = Blueprint('buyer_order', __name__)
 
@@ -193,4 +194,67 @@ def submit_order(current_user):
         return jsonify({
             "code": 500,
             "message": f"Server error: {str(e)}"
+        }), 500
+
+# 买家确认收货接口[PUT]   /api/buy_order/confirm_delivery
+@main.route('/confirm_delivery', methods=['PUT'])
+@token_required
+def confirm_delivery(current_user):
+    try:
+        # 确保用户是买家
+        if current_user.role != 'buyer':
+            return jsonify({
+                "code": 403,
+                "message": "Access denied: Only buyers can confirm delivery"
+            }), 403
+
+        # 获取前端发送的请求数据
+        data = request.get_json()
+        if not data or 'orderid' not in data:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid input: Missing required field 'orderid'"
+            }), 400
+
+        # 检查订单是否存在
+        order = Order.query.filter_by(orderid=data['orderid']).first()
+        if not order:
+            return jsonify({
+                "code": 404,
+                "message": f"Order not found with orderid: {data['orderid']}"
+            }), 404
+
+        # 检查订单是否属于当前买家
+        if order.userid != current_user.userid:
+            return jsonify({
+                "code": 403,
+                "message": "Access denied: Order does not belong to you"
+            }), 403
+
+        # 检查订单当前状态是否为 "shipped"
+        if order.status != 'shipped':
+            return jsonify({
+                "code": 400,
+                "message": "Order status can only be updated to 'delivered' from 'shipped'"
+            }), 400
+
+        # 更新订单状态为 "delivered"
+        order.status = 'delivered'
+        db.session.commit()
+
+        return jsonify({
+            "code": 200,
+            "message": "Order status updated to 'delivered' successfully",
+            "data": {
+                "orderid": data['orderid'],
+                "status": order.status
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return jsonify({
+            "code": 500,
+            "message": f"Error: {str(e)}"
         }), 500
