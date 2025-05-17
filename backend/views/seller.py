@@ -563,3 +563,127 @@ def get_hot_products(current_user):
             "code": 500,
             "message": f"服务器错误: {str(e)}"
         }), 500
+
+
+
+
+# 卖家销售数据API [GET] /salesData
+@main.route('/salesData', methods=['GET'])
+@token_required
+def get_sales_data(current_user):
+    try:
+        # 确保用户是卖家
+        if current_user.role != 'seller':
+            return jsonify({"code": 403, "message": "无权访问"}), 403
+
+        # 获取时间范围参数（默认为最近30天）
+        days = int(request.args.get('days', 30))
+
+        # 计算日期范围
+        end_date = datetime.datetime.utcnow()
+        start_date = end_date - datetime.timedelta(days=days)
+
+        # 获取当日日期（UTC）
+        today_start = datetime.datetime.utcnow().replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + datetime.timedelta(days=1)
+
+        # 查询历史销售数据（按天分组）
+        history_data = db.session.query(
+            db.func.date(Order.createtime).label('date'),
+            db.func.sum(Order.totalprice).label('total_sales'),
+            db.func.sum(db.func.cast(OrderItem.quantity, db.Integer)).label('total_quantity'),
+            db.func.count(Order.orderid.distinct()).label('order_count')
+        ).join(OrderItem, Order.orderid == OrderItem.orderid
+               ).filter(
+            Order.sellerid == current_user.userid,
+            Order.createtime >= start_date,
+            Order.createtime <= end_date,
+            Order.status.in_(['shipped', 'delivered'])  # 只统计已发货和已完成的订单
+        ).group_by(
+            db.func.date(Order.createtime)
+        ).order_by(
+            db.func.date(Order.createtime)
+        ).all()
+
+        # 查询当日销售数据
+        today_data = db.session.query(
+            db.func.sum(Order.totalprice).label('total_sales'),
+            db.func.sum(db.func.cast(OrderItem.quantity, db.Integer)).label('total_quantity'),
+            db.func.count(Order.orderid.distinct()).label('order_count')
+        ).join(OrderItem, Order.orderid == OrderItem.orderid
+               ).filter(
+            Order.sellerid == current_user.userid,
+            Order.createtime >= today_start,
+            Order.createtime < today_end,
+            Order.status.in_(['shipped', 'delivered'])
+        ).first()
+
+        # 查询热销商品（按销量排序）
+        top_products = db.session.query(
+            Product.proid,
+            Product.name,
+            Product.image,
+            db.func.sum(OrderItem.quantity).label('total_sold')
+        ).join(OrderItem, Product.proid == OrderItem.proid
+               ).join(Order, OrderItem.orderid == Order.orderid
+                      ).filter(
+            Order.sellerid == current_user.userid,
+            Order.createtime >= start_date,
+            Order.createtime <= end_date,
+            Order.status.in_(['shipped', 'delivered'])
+        ).group_by(Product.proid
+                   ).order_by(db.desc('total_sold')
+                              ).limit(5).all()
+
+        # 格式化历史数据
+        formatted_history = []
+        for data in history_data:
+            formatted_history.append({
+                "date": data.date.strftime('%Y-%m-%d'),
+                "total_sales": float(data.total_sales) if data.total_sales else 0,
+                "total_quantity": data.total_quantity if data.total_quantity else 0,
+                "order_count": data.order_count if data.order_count else 0
+            })
+
+        # 格式化当日数据
+        formatted_today = {
+            "total_sales": float(today_data.total_sales) if today_data.total_sales else 0,
+            "total_quantity": today_data.total_quantity if today_data.total_quantity else 0,
+            "order_count": today_data.order_count if today_data.order_count else 0,
+            "date": datetime.datetime.utcnow().strftime('%Y-%m-%d')
+        }
+
+        # 格式化热销商品
+        formatted_top_products = []
+        for product in top_products:
+            formatted_top_products.append({
+                "productId": product.proid,
+                "productName": product.name,
+                "imageUrl": product.image,
+                "totalSold": product.total_sold if product.total_sold else 0
+            })
+
+        # 构建响应数据
+        response_data = {
+            "history": formatted_history,
+            "today": formatted_today,
+            "topProducts": formatted_top_products,
+            "timeRange": {
+                "startDate": start_date.strftime('%Y-%m-%d'),
+                "endDate": end_date.strftime('%Y-%m-%d')
+            }
+        }
+
+        return jsonify({
+            "code": 200,
+            "message": "获取销售数据成功",
+            "data": response_data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": f"服务器错误: {str(e)}"
+        }), 500
+
