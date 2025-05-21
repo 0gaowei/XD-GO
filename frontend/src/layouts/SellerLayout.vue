@@ -13,6 +13,7 @@
             <el-menu-item index="/seller">MyProducts</el-menu-item>
             <el-menu-item index="/addproducts">EditProducts</el-menu-item>
             <el-menu-item index="/sellerorders">MyOrders</el-menu-item>
+            <el-menu-item index="/salesData">Sales Data</el-menu-item>
             <el-menu-item index="/order">Switch To Buyer</el-menu-item>
           </el-menu>
         </div>

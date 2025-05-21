@@ -45,6 +45,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/sell_order': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      }
     },
   },
 })

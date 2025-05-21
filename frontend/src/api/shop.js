@@ -8,21 +8,38 @@ export function getHotProducts() {
   })
 }
 
-// 获取搜索结果
-export function getSearchResults(params) {
+// 获取搜索建议
+export function getSearchSuggestions(keyword) {
   return request({
-    url: '/shop/search',
+    url: '/api/search/suggestions',
     method: 'get',
-    params,
+    params: { keyword }
   })
 }
 
-// 获取相关分类推荐
+// 获取热门搜索
+export function getHotSearches() {
+  return request({
+    url: '/api/search/hot',
+    method: 'get'
+  })
+}
+
+// 获取搜索结果
+export function getSearchResults(params) {
+  return request({
+    url: '/api/search/results',
+    method: 'get',
+    params
+  })
+}
+
+// 获取相关分类
 export function getRelatedCategories(keyword) {
   return request({
-    url: '/shop/search/categories',
+    url: '/api/search/categories',
     method: 'get',
-    params: { keyword },
+    params: { keyword }
   })
 }
 

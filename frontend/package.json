@@ -16,6 +16,7 @@
     "@wangeditor/editor-for-vue": "^5.1.12",
     "axios": "^1.6.7",
     "dayjs": "^1.11.10",
+    "echarts": "^5.6.0",
     "element-plus": "^2.9.7",
     "lodash-es": "^4.17.21",
     "pinia": "^3.0.1",

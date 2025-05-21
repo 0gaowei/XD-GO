@@ -25,6 +25,14 @@ export default {
       meta: {
         title: '我的订单',
       },
+    },
+    {
+      path: '/salesData',
+      name: 'SalesData',
+      component: () => import('@/views/seller/salesData.vue'),
+      meta: {
+        title: '销售数据',
+      },
     }
   ],
 }

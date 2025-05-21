@@ -382,3 +382,12 @@ export function getHotProducts() {
     method: 'get',
   })
 }
+
+// 获取销售数据
+export function getSalesData(params) {
+  return request({
+    url: '/api/sell_order/salesData',
+    method: 'get',
+    params,
+  })
+}
