@@ -131,3 +131,62 @@ def get_all_categories():
             'code': 500,
             'message': f"Error: {str(e)}"
         }), 500  # Internal Server Error
+
+
+# 买家搜索商品API[GET]   /search
+@main.route('/search', methods=['GET'])
+def search_products():
+    try:
+        # 获取搜索关键词
+        keyword = request.args.get('keyword', '')
+
+        if not keyword:
+            return jsonify({
+                'status': 400,
+                'message': '搜索关键词不能为空',
+            }), 400
+
+        # 在商品名称和描述中搜索关键词
+        products = Product.query.filter(
+            db.or_(
+                Product.name.like(f'%{keyword}%'),
+                Product.description.like(f'%{keyword}%')
+            )
+        ).all()
+
+        # 将商品数据转换为字典列表
+        product_list = []
+        for product in products:
+            category = Category.query.filter_by(catid=product.catid).first()
+
+            product_data = {
+                'productId': product.proid,
+                'productName': product.name,
+                'price': float(product.price),
+                'description': product.description,
+                'stock': product.stock,
+                'createTime': product.createtime.strftime('%Y-%m-%d %H:%M:%S'),
+                'updateTime': product.updatetime.strftime('%Y-%m-%d %H:%M:%S'),
+                'category': category.name if category else 'N/A',  # 获取商品分类名
+                'imageUrl': product.image,  # 返回图床 URL
+                'sellerId': product.userid  # 添加商店信息
+            }
+            product_list.append(product_data)
+
+        # 返回搜索结果
+        return jsonify({
+            'status': 200,
+            'message': f'成功找到 {len(product_list)} 个匹配的商品',
+            'data': {
+                'list': product_list,
+                'total': len(product_list),
+                'keyword': keyword
+            }
+        }), 200
+
+    except Exception as e:
+        # 捕获异常并返回错误信息
+        return jsonify({
+            'status': 500,
+            'message': f'搜索过程中发生错误: {str(e)}',
+        }), 500

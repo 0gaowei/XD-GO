@@ -565,8 +565,6 @@ def get_hot_products(current_user):
         }), 500
 
 
-
-
 # 卖家销售数据API [GET] /salesData
 @main.route('/salesData', methods=['GET'])
 @token_required
