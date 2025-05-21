@@ -48,6 +48,7 @@ def get_all_products():
         }), 500
 
 
+'''
 # 买家获取某个商品的详细信息API[GET]   /detail
 @main.route('/detail', methods=['GET'])
 def get_product_detail():
@@ -83,6 +84,65 @@ def get_product_detail():
             "image": product.image,
             "createtime": product.createtime.strftime("%Y-%m-%d %H:%M:%S"),
             "updatetime": product.updatetime.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        return jsonify({
+            "code": 200,
+            "message": "Product detail retrieved successfully",
+            "data": data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "code": 0,
+            "message": str(e)
+        }), 500  # 500 Internal Server Error
+'''
+
+
+# 买家获取某个商品的详细信息API[GET]   /detail
+@main.route('/detail', methods=['GET'])
+def get_product_detail():
+    try:
+        # 获取商品ID
+        goods_id = request.args.get('goodsId')
+        if not goods_id:
+            return jsonify({
+                "code": 0,
+                "message": "Invalid input: Missing required field 'goodsId'"
+            }), 400
+
+        # 查询商品
+        product = Product.query.filter_by(proid=goods_id).first()
+        if not product:
+            return jsonify({
+                "code": 0,
+                "message": f"Product not found with proid: {goods_id}"
+            }), 404
+
+        # 查询商品分类
+        category = Category.query.filter_by(catid=product.catid).first()
+
+        # 查询卖家信息
+        seller = User.query.filter_by(userid=product.userid).first()
+        seller_info = {
+            "seller_id": product.userid,
+            "seller_username": seller.username if seller else "Unknown"
+        }
+
+        # 组装数据
+        data = {
+            "goods_id": product.proid,
+            "goods_name": product.name,
+            "price": str(product.price),  # 转换为字符串，前端显示时会自动转换回数字
+            "stock": product.stock,
+            "description": product.description,
+            "category_id": product.catid,
+            "category_name": category.catname,
+            "image": product.image,
+            "createtime": product.createtime.strftime("%Y-%m-%d %H:%M:%S"),
+            "updatetime": product.updatetime.strftime("%Y-%m-%d %H:%M:%S"),
+            "seller": seller_info  # 添加卖家信息
         }
 
         return jsonify({
