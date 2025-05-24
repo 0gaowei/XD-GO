@@ -177,12 +177,15 @@ const handleQuantityChange = async (item, quantity) => {
 
 // 去结算
 const handleCheckout = () => {
-  if (!cartStore.selectedCount) {
-    ElMessage.warning('请选择要结算的商品')
-    return
-  }
-  router.push('/checkout')
+    if (!cartStore.selectedCount) {
+        ElMessage.warning('请选择要结算的商品')
+        return
+    }
+    router.push('/scan-pay')  // ✅ 修改为扫码支付
 }
+
+
+
 </script>
 
 <style lang="scss" scoped>
