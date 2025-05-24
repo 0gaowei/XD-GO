@@ -72,12 +72,8 @@
             <div class="section payment-section">
                 <h2 class="section-title">支付方式</h2>
                 <el-radio-group v-model="paymentMethod">
-                    <el-radio label="wechat">
-                        <el-image src="https://via.placeholder.com/30" class="payment-icon" />
-                        微信支付
-                    </el-radio>
                     <el-radio label="alipay">
-                        <el-image src="https://via.placeholder.com/30" class="payment-icon" />
+                        <el-image src="https://img.alicdn.com/imgextra/i2/O1CN01DcYqYl1RFg7Q4Q0jG_!!6000000002074-2-tps-200-200.png" class="payment-icon" />
                         支付宝
                     </el-radio>
                 </el-radio-group>
@@ -153,7 +149,7 @@ import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { ElMessage } from 'element-plus'
-import { submitOrder } from '@/api/shop'
+import { submitOrder, createWebPay} from '@/api/shop'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -212,7 +208,7 @@ const regionData = [
 const selectedAddressId = ref(addresses.find(addr => addr.isDefault)?.id || '')
 
 // 支付方式
-const paymentMethod = ref('wechat')
+const paymentMethod = ref('alipay')
 
 // 订单备注
 const remark = ref('')
@@ -246,10 +242,18 @@ const handleSubmitOrder = async () => {
                 quantity: item.quantity
             }))
         })
-
-        ElMessage.success('下单成功')
-        cartStore.clearCart()
-        router.push('/order/success')
+        const orderNo = res.data.order_no
+        if (paymentMethod.value === 'alipay') {
+            // 网站支付
+            const payRes = await createWebPay({
+                order_no: orderNo,
+                total_amount: totalAmount.value,
+                subject: `订单支付-${orderNo}`
+            })
+            window.location.href = payRes.pay_url
+            ElMessage.success('下单成功')
+            cartStore.clearCart()
+        }
     } catch (error) {
         console.error('下单失败:', error)
         ElMessage.error('下单失败，请重试')
