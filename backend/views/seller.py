@@ -3,6 +3,7 @@ from backend.models import db, Product, Category, Order, OrderItem, User, CartIt
 from backend.views.auth import token_required
 import datetime
 import uuid
+import pprint
 
 main = Blueprint('seller', __name__)
 
@@ -672,6 +673,8 @@ def get_sales_data(current_user):
                 "endDate": end_date.strftime('%Y-%m-%d')
             }
         }
+
+        pprint.pprint(response_data)
 
         return jsonify({
             "code": 200,

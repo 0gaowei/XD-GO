@@ -3,6 +3,8 @@
 
 .vscode/
 
+.cursor/
+
 backend/__pycache__/
 backend/migrations/__pycache__/
 backend/views/__pychache__/

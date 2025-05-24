@@ -196,6 +196,7 @@ def submit_order(current_user):
             "message": f"Server error: {str(e)}"
         }), 500
 
+
 # 买家确认收货接口[PUT]   /api/buy_order/confirm_delivery
 @main.route('/confirm_delivery', methods=['PUT'])
 @token_required
