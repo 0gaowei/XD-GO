@@ -123,6 +123,24 @@ export default {
          requireAuth: true,
        },
      },
+
+
+
+      {
+          path: 'scan-pay',
+          name: 'ScanPay',
+          component: () => import('@/views/shop/pay/ScanPay.vue'),
+          meta: {
+              title: '扫码支付',
+              requireAuth: true,
+          },
+      },
+
+
+
+
+
+
     // {
     //   path: 'refund/:id',
     //   name: 'Refund',
