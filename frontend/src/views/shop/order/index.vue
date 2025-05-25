@@ -4,7 +4,7 @@
             <h2>我的订单</h2>
             <!-- 订单状态标签 -->
             <div class="order-tabs">
-                <el-tabs v-model="activeStatus" @tab-change="handleStatusChange">
+                <el-tabs v-model="activeStatus" @tab-click="handleStatusChange">
                     <el-tab-pane label="全部" name="" />
                     <el-tab-pane label="待付款" name="unpaid" />
                     <el-tab-pane label="待发货" name="paid" />
@@ -111,7 +111,7 @@ const router = useRouter()
 
 // 订单状态
 const activeStatus = ref('')
-const handleStatusChange = () => {
+const handleStatusChange = (tab) => {
     currentPage.value = 1
     fetchOrders()
 }
@@ -130,8 +130,24 @@ const fetchOrders = async () => {
             page: currentPage.value,
             limit: pageSize.value
         })
-        orderList.value = res.data.orders // 确保后端返回的数据结构正确
-        total.value = res.data.total
+        // 字段映射
+        orderList.value = (res.data.orders || []).map(order => ({
+            id: order.orderid,
+            orderNo: order.orderid,
+            createTime: order.createtime,
+            status: order.status,
+            products: (order.order_items || []).map(item => ({
+                id: item.proid,
+                name: item.name,
+                price: Number(item.price),
+                quantity: item.quantity,
+                image: item.image,
+                specs: item.specs || {} // 如果有规格字段
+            })),
+            totalAmount: Number(order.totalprice),
+            shippingFee: Number(order.shipping_fee || 0) // 如果有运费字段
+        }))
+        total.value = res.data.total || 0
     } catch (error) {
         console.error('获取订单列表失败:', error)
         ElMessage.error('获取订单列表失败')
