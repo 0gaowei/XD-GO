@@ -11,7 +11,11 @@ def create_database_if_not_exists():
     connection = MySQLdb.connect(
         user='root',
 
+<<<<<<< Updated upstream
         password='123456',  # replace with your password
+=======
+        password='003620',  # replace with your password
+>>>>>>> Stashed changes
 
         host='localhost'
     )

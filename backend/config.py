@@ -10,7 +10,11 @@ class Config:
 
 class DevelopmentConfig(Config):
 
+<<<<<<< Updated upstream
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:123456@localhost:3306/xd_go'
+=======
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:003620@localhost:3306/xd_go'
+>>>>>>> Stashed changes
 
     DEBUG = True
 

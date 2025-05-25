@@ -4,6 +4,7 @@ from backend.views.auth import token_required
 from .pay import alipay_obj
 import uuid
 from flask import request
+import pprint
 
 main = Blueprint('buyer_order', __name__)
 temp_orders = {}
@@ -66,6 +67,8 @@ def get_order_list(current_user):
                 "createtime": order.createtime.strftime("%Y-%m-%d %H:%M:%S"),
                 "order_items": order_items_data
             })
+
+        pprint.pprint(order_list)  # Debugging line to print the order list
 
         # Return the order list
         return jsonify({
