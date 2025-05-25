@@ -277,3 +277,54 @@ export function applyRefund(orderId, data) {
     data,
   })
 }
+
+// 电脑网站支付
+export function createWebPay(data) {
+  return request({
+    url: '/api/buy_order/pay',
+    method: 'post',
+    data
+  })
+}
+
+// 扫码支付
+export function createQrPay(data) {
+  return request({
+    url: '/api/buy_order/pay_qr',
+    method: 'post',
+    data
+  })
+}
+
+// 检查支付状态
+export function checkPayStatus(orderNo) {
+  const formData = new FormData()
+  formData.append('order_no', orderNo)
+
+  return request({
+    url: '/api/buy_order/check_pay',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+// 支付结果回调处理
+export function handlePayResult(data) {
+  return request({
+    url: '/api/buy_order/alipay/notify',
+    method: 'post',
+    data
+  })
+}
+
+// 支付宝同步跳转通知处理
+export function alipayReturnHandler(params) {
+  return request({
+    url: '/api/buy_order/alipay/return',
+    method: 'get',
+    params
+  })
+}

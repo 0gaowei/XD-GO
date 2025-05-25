@@ -11,7 +11,7 @@ def create_database_if_not_exists():
     connection = MySQLdb.connect(
         user='root',
 
-        password='1234',  # replace with your password
+        password='123456',  # replace with your password
 
         host='localhost'
     )

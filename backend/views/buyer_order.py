@@ -1,11 +1,12 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify,request,url_for,redirect
 from backend.models import db, Product, Cart, CartItem, Order, OrderItem
 from backend.views.auth import token_required
+from .pay import alipay_obj
 import uuid
 from flask import request
 
 main = Blueprint('buyer_order', __name__)
-
+temp_orders = {}
 
 # 支付接口模拟函数，仅供参考
 def initiate_payment(order_id, totalprice):
@@ -259,3 +260,59 @@ def confirm_delivery(current_user):
             "code": 500,
             "message": f"Error: {str(e)}"
         }), 500
+
+
+@main.route('/pay', methods=['POST'])
+@token_required
+def web_pay(current_user):
+    """电脑网站支付"""
+    alipay = alipay_obj()
+    order_no = str(uuid.uuid4())
+    order_string = alipay.api_alipay_trade_page_pay(
+        out_trade_no=order_no,
+        total_amount=request.json.get('total_amount'),
+        subject=request.json.get('subject'),
+        return_url=url_for('buyer_order.alipay_success_result', _external=True),
+        notify_url=url_for('buyer_order.alipay_notify', _external=True)
+    )
+
+    pay_url = f"https://openapi-sandbox.dl.alipaydev.com/gateway.do?{order_string}"
+    return jsonify({'status': 1, 'pay_url': pay_url})
+
+@main.route('/check_pay', methods=['POST'])
+def check_pay():
+    order_no = request.form.get('order_no')
+    order_status = temp_orders.get(order_no, {'paid': False})
+    
+    try:
+        response = alipay_obj().api_alipay_trade_query(out_trade_no=order_no)
+        if response.get('trade_status') in ('TRADE_SUCCESS', 'TRADE_FINISHED'):
+            temp_orders[order_no]['paid'] = True
+    except Exception as e:
+        pass
+    
+    return jsonify({'paid': order_status['paid']})
+
+@main.route('/alipay/notify', methods=['POST'])
+def alipay_notify():
+    data = request.form.to_dict()
+    signature = data.pop('sign', '')
+
+    if alipay_obj().verify(data, signature):
+        trade_status = data.get('trade_status')
+        order_no = data.get('out_trade_no')
+        
+        if trade_status in ('TRADE_SUCCESS', 'TRADE_FINISHED'):
+            # 更新数据库订单状态
+            order = Order.query.filter_by(orderid=order_no).first()
+            if order:
+                order.status = 'paid'
+                db.session.commit()
+            return 'success'
+    
+    return 'fail'
+
+# 支付宝同步通知接口（支付成功后跳转）
+@main.route('/alipay/return')
+def alipay_success_result():
+    return redirect(f"http://localhost:5173/order/success")
