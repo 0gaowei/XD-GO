@@ -385,7 +385,8 @@ def get_sell_order_list(current_user):
             }), 403
 
         # 获取卖家的订单
-        orders = Order.query.filter_by(sellerid=current_user.userid).all()
+        # orders = Order.query.filter_by(sellerid=current_user.userid).all()
+        orders = Order.query.filter_by(sellerid=current_user.userid).order_by(Order.createtime.desc()).all()
         # print(orders)
         if not orders:
             return jsonify({
