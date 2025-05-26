@@ -32,7 +32,7 @@ def get_order_list(current_user):
             }), 403
 
         # Get the user's orders
-        orders = Order.query.filter_by(userid=current_user.userid).all()
+        orders = Order.query.filter_by(userid=current_user.userid).order_by(Order.createtime.desc()).all()
         if not orders:
             return jsonify({
                 "code": 404,
@@ -318,4 +318,4 @@ def alipay_notify():
 # 支付宝同步通知接口（支付成功后跳转）
 @main.route('/alipay/return')
 def alipay_success_result():
-    return redirect(f"http://localhost:5173/order/success")
+    return redirect(f"http://localhost:5173/order")
