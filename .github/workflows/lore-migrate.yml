@@ -12,7 +12,7 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     steps:
-      - uses: Larry-Wayn/lore@91875cc7e4abbc6d137da44ab55554250bbae253
+      - uses: Larry-Wayn/lore@52578d75530a317932f25a66374525d6e336da7e
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deepseek-api-key: ${{ secrets.DEEPSEEK_API_KEY }}
