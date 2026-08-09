@@ -176,7 +176,9 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Search, Delete, ArrowUp, ArrowDown, Grid, List } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { getSearchSuggestions, getHotSearches, getSearchResults, getRelatedCategories } from '@/api/shop'
+import { normalizeSearchKeyword } from '@/utils/search-keyword'
 import { debounce } from 'lodash-es'
 
 const route = useRoute()
@@ -189,14 +191,15 @@ const showSuggestions = ref(false)
 
 // 防抖处理搜索建议
 const handleInput = debounce(async () => {
-    if (!keyword.value) {
+    const normalizedKeyword = normalizeSearchKeyword(keyword.value)
+    if (!normalizedKeyword) {
         suggestions.value = []
         showSuggestions.value = false
         return
     }
 
     try {
-        const res = await getSearchSuggestions(keyword.value)
+        const res = await getSearchSuggestions(normalizedKeyword)
         suggestions.value = res.data
         showSuggestions.value = true
     } catch (error) {
@@ -205,17 +208,21 @@ const handleInput = debounce(async () => {
 }, 300)
 
 const handleSearch = () => {
-    if (!keyword.value) return
+    const normalizedKeyword = normalizeSearchKeyword(keyword.value)
+    if (!normalizedKeyword) {
+        ElMessage.warning('请输入搜索关键词')
+        return
+    }
+
+    keyword.value = normalizedKeyword
     showSuggestions.value = false
-    addToHistory(keyword.value)
+    addToHistory(normalizedKeyword)
     updateQuery()
 }
 
 const handleSuggestionClick = (item) => {
-    keyword.value = item.text
-    showSuggestions.value = false
-    addToHistory(item.text)
-    updateQuery()
+    keyword.value = normalizeSearchKeyword(item.text)
+    handleSearch()
 }
 
 const highlightKeyword = (text) => {
@@ -264,7 +271,7 @@ const clearHistory = () => {
 }
 
 const handleHistoryClick = (text) => {
-    keyword.value = text
+    keyword.value = normalizeSearchKeyword(text)
     handleSearch()
 }
 
@@ -281,7 +288,7 @@ const fetchHotSearches = async () => {
 }
 
 const handleHotClick = (item) => {
-    keyword.value = item.keyword
+    keyword.value = normalizeSearchKeyword(item.keyword)
     handleSearch()
 }
 
@@ -413,8 +420,11 @@ const handleCurrentChange = (val) => {
 
 // 更新查询参数
 const updateQuery = () => {
+    const normalizedKeyword = normalizeSearchKeyword(keyword.value)
+    keyword.value = normalizedKeyword
+
     const query = {
-        keyword: keyword.value,
+        keyword: normalizedKeyword || undefined,
         brandId: selectedBrand.value?.id,
         minPrice: customPriceRange.min || priceRanges[selectedPriceRange.value]?.min,
         maxPrice: customPriceRange.max || priceRanges[selectedPriceRange.value]?.max,
