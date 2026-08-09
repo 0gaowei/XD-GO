@@ -1,0 +1,19 @@
+name: DeepSeek LORE migration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Larry-Wayn/lore@b67e07e2189fbccd729492e0afefae39d1ad0a26
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deepseek-api-key: ${{ secrets.DEEPSEEK_API_KEY }}
+          mode: migrate
