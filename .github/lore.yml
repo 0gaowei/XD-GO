@@ -1,4 +1,4 @@
-model: deepseek-v4-flash
+model: deepseek-chat
 base_url: https://openrouter.fans/v1
 review_language: auto
 
