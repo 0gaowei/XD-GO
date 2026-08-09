@@ -1,0 +1,19 @@
+model: deepseek-v4-flash
+base_url: https://openrouter.fans/v1
+review_language: auto
+
+labels:
+  conflict: lore:conflict
+  security: lore:security
+  needs_human: lore:needs-human
+  decision_captured: lore:decision-captured
+  superseded: lore:superseded
+
+limits:
+  max_diff_bytes: 180000
+  max_memory_candidates: 10
+  max_memories_per_review: 5
+  migration_pr_limit: 100
+
+commands:
+  minimum_permission: maintain
